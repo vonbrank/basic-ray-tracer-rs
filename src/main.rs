@@ -11,6 +11,7 @@ mod ray;
 mod vec3;
 mod hittable;
 mod spere;
+mod hittable_list;
 
 fn ray_color(r: &Ray) -> Color {
     let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r);
