@@ -30,9 +30,9 @@ impl Hittable for Sphere {
         rec: &mut crate::hittable::HitRecord,
     ) -> bool {
         let ac = r.origin() - self.center;
-        let a = Vec3::dot(&r.direction(), &r.direction());
+        let a = r.direction().length_squared();
         let half_b = Vec3::dot(&r.direction(), &ac);
-        let c = Vec3::dot(&ac, &ac) - self.radius * self.radius;
+        let c = ac.length_squared() - self.radius * self.radius;
         let discriminant = half_b * half_b - a * c;
 
         if discriminant < 0.0 {

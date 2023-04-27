@@ -1,5 +1,7 @@
 use std::ops;
 
+use crate::utils::{random_f32, random_f32_with_range};
+
 #[derive(Clone, Copy, Debug)]
 pub struct Vec3 {
     pub e: (f32, f32, f32),
@@ -11,6 +13,18 @@ pub type Color = Vec3;
 impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
         Vec3 { e: (x, y, z) }
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3::new(random_f32(), random_f32(), random_f32())
+    }
+
+    pub fn random_with_range(min: f32, max: f32) -> Vec3 {
+        Vec3::new(
+            random_f32_with_range(min, max),
+            random_f32_with_range(min, max),
+            random_f32_with_range(min, max),
+        )
     }
 
     pub fn x(&self) -> f32 {
@@ -135,5 +149,14 @@ impl ops::DivAssign<f32> for Vec3 {
         self.e.0 /= rhs;
         self.e.1 /= rhs;
         self.e.2 /= rhs;
+    }
+}
+
+pub fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let p = Vec3::random_with_range(-1.0, 1.0);
+        if p.length_squared() < 0.5 {
+            return p;
+        }
     }
 }
