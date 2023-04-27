@@ -2,7 +2,7 @@ use std::{f32::EPSILON, rc::Rc};
 
 use hittable::{HitRecord, Hittable};
 use ray::Ray;
-use vec3::{random_in_unit_sphere, Vec3};
+use vec3::{random_in_hemisphere, random_in_unit_sphere, random_unit_vector, Vec3};
 
 use crate::{
     camera::Camera,
@@ -29,7 +29,7 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color {
 
     let mut rec = HitRecord::new();
     if world.hit(r, EPSILON, f32::MAX, &mut rec) {
-        let target = rec.p + rec.normal + random_in_unit_sphere();
+        let target = rec.p + random_in_hemisphere(&rec.normal);
         return 0.5
             * ray_color(
                 &Ray::with_origin_and_direction(&rec.p, &(target - rec.p)),
