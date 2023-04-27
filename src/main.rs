@@ -9,6 +9,8 @@ use crate::{
 mod color;
 mod ray;
 mod vec3;
+mod hittable;
+mod spere;
 
 fn ray_color(r: &Ray) -> Color {
     let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r);
