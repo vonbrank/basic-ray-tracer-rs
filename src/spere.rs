@@ -3,9 +3,22 @@ use crate::{
     vec3::{Point3, Vec3},
 };
 
-struct Sphere {
+pub struct Sphere {
     center: Point3,
     radius: f32,
+}
+
+impl Sphere {
+    pub fn new() -> Sphere {
+        Sphere {
+            center: Point3::new(0.0, 0.0, 0.0),
+            radius: 1.0,
+        }
+    }
+
+    pub fn with_center_and_radius(center: Point3, radius: f32) -> Sphere {
+        Sphere { center, radius }
+    }
 }
 
 impl Hittable for Sphere {

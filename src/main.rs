@@ -1,41 +1,33 @@
+use std::rc::Rc;
+
+use hittable::{HitRecord, Hittable};
 use ray::Ray;
 use vec3::Vec3;
 
 use crate::{
     color::write_color,
+    hittable_list::HittableList,
+    spere::Sphere,
     vec3::{Color, Point3},
 };
 
 mod color;
-mod ray;
-mod vec3;
 mod hittable;
-mod spere;
 mod hittable_list;
+mod ray;
+mod spere;
+mod utils;
+mod vec3;
 
-fn ray_color(r: &Ray) -> Color {
-    let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r);
-    if t > 0.0 {
-        let normal: Vec3 = Vec3::unit_vector(&(r.at(t) - Vec3::new(0.0, 0.0, -1.0)));
-        return Color::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0) * 0.5;
+fn ray_color(r: &Ray, world: &HittableList) -> Color {
+    let mut rec = HitRecord::new();
+    if world.hit(r, 0.0, f32::MAX, &mut rec) {
+        return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
     }
 
     let unit_direction = Vec3::unit_vector(&r.direction());
     let t = 0.5 * (unit_direction.y() + 1.0);
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
-}
-
-fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> f32 {
-    let ac = r.origin() - *center;
-    let a = Vec3::dot(&r.direction(), &r.direction());
-    let half_b = Vec3::dot(&r.direction(), &ac);
-    let c = Vec3::dot(&ac, &ac) - radius * radius;
-    let discriminant = half_b * half_b - a * c;
-    if discriminant > 0.0 {
-        (-half_b - discriminant.sqrt()) / a
-    } else {
-        -1.0
-    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -44,6 +36,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aspect_ratio = 16.0_f32 / 9.0_f32;
     let image_width = 400;
     let image_height = (image_width as f32 / aspect_ratio) as i32;
+
+    // World
+
+    let mut world = HittableList::new();
+    world.add(Rc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, 0.0, -1.0),
+        0.5,
+    )));
+    world.add(Rc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+    )));
 
     // Camera
 
@@ -70,7 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &origin,
                 &(lower_left_corner + u * horizontal + v * vertical - origin),
             );
-            let pixel_color = ray_color(&ray);
+            let pixel_color = ray_color(&ray, &world);
 
             write_color(pixel_color);
         }
