@@ -11,11 +11,28 @@ mod ray;
 mod vec3;
 
 fn ray_color(r: &Ray) -> Color {
+    let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r);
+    if t > 0.0 {
+        let normal: Vec3 = Vec3::unit_vector(&(r.at(t) - Vec3::new(0.0, 0.0, -1.0)));
+        return Color::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0) * 0.5;
+    }
+
     let unit_direction = Vec3::unit_vector(&r.direction());
-
     let t = 0.5 * (unit_direction.y() + 1.0);
-
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+}
+
+fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> f32 {
+    let ac = r.origin() - *center;
+    let a = Vec3::dot(&r.direction(), &r.direction());
+    let half_b = Vec3::dot(&r.direction(), &ac);
+    let c = Vec3::dot(&ac, &ac) - radius * radius;
+    let discriminant = half_b * half_b - a * c;
+    if discriminant > 0.0 {
+        (-half_b - discriminant.sqrt()) / a
+    } else {
+        -1.0
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
