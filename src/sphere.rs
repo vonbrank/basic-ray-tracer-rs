@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{
     hittable::Hittable,
@@ -9,7 +9,7 @@ use crate::{
 pub struct Sphere {
     center: Point3,
     radius: f32,
-    mat: Rc<dyn Material>,
+    mat: Arc<dyn Material>,
 }
 
 impl Sphere {
@@ -17,11 +17,11 @@ impl Sphere {
         Sphere {
             center: Point3::new(0.0, 0.0, 0.0),
             radius: 1.0,
-            mat: Rc::new(EmptyMaterial {}),
+            mat: Arc::new(EmptyMaterial {}),
         }
     }
 
-    pub fn with_center_and_radius(center: Point3, radius: f32, m: Rc<dyn Material>) -> Sphere {
+    pub fn with_center_and_radius(center: Point3, radius: f32, m: Arc<dyn Material>) -> Sphere {
         Sphere {
             center,
             radius,
@@ -61,8 +61,10 @@ impl Hittable for Sphere {
         rec.p = r.at(rec.t);
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
-        rec.mat = Rc::clone(&self.mat);
+        rec.mat = Arc::clone(&self.mat);
 
         true
     }
 }
+
+unsafe impl Send for Sphere {}

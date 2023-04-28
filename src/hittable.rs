@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{
     material::{EmptyMaterial, Material},
@@ -11,7 +11,7 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub t: f32,
     pub front_face: bool,
-    pub mat: Rc<dyn Material>,
+    pub mat: Arc<dyn Material>,
 }
 
 impl HitRecord {
@@ -21,7 +21,7 @@ impl HitRecord {
             normal: Vec3::new(1.0, 0.0, 0.0),
             t: 1.0,
             front_face: true,
-            mat: Rc::new(EmptyMaterial {}),
+            mat: Arc::new(EmptyMaterial {}),
         }
     }
 
@@ -35,6 +35,6 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Send {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool;
 }

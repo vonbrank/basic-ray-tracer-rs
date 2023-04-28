@@ -1,23 +1,24 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::hittable::{HitRecord, Hittable};
 
+#[derive(Clone)]
 pub struct HittableList {
-    pub objects: Vec<Rc<dyn Hittable>>,
+    pub objects: Vec<Arc<dyn Hittable>>,
 }
 
 impl HittableList {
     pub fn new() -> HittableList {
         HittableList { objects: vec![] }
     }
-    pub fn with_object(object: Rc<dyn Hittable>) -> HittableList {
+    pub fn with_object(object: Arc<dyn Hittable>) -> HittableList {
         let objects = vec![object];
         HittableList { objects }
     }
     pub fn clear(&mut self) {
         self.objects.clear();
     }
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
     }
 }
@@ -46,3 +47,5 @@ impl Hittable for HittableList {
         hit_anything
     }
 }
+
+unsafe impl Send for HittableList {}
