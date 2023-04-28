@@ -8,7 +8,7 @@ use crate::{
     camera::Camera,
     color::write_color,
     hittable_list::HittableList,
-    material::{Lambertian, Metal},
+    material::{Dielectric, Lambertian, Metal},
     sphere::Sphere,
     utils::random_f32,
     vec3::{Color, Point3},
@@ -44,6 +44,19 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color {
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
+fn print_progress(current_row: i32, max_height: i32) {
+    let progress_bar_length = 25;
+    let percentage = (current_row as f32 / max_height as f32 * 100.0) as i32;
+    let progress = ((percentage as f32 / 100.0) * progress_bar_length as f32) as i32;
+    eprint!(
+        "\x1B[2K\x1B[1GLoading: [{}{}] {}% row-{}",
+        "#".repeat(progress as usize),
+        "-".repeat((progress_bar_length - progress) as usize),
+        percentage,
+        current_row,
+    );
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image
 
@@ -58,8 +71,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut world = HittableList::new();
 
     let material_ground = Rc::new(Lambertian::with_albedo(&Color::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::with_albedo(&Color::new(0.7, 0.3, 0.3)));
-    let material_left = Rc::new(Metal::new(&Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_center = Rc::new(Lambertian::with_albedo(&Color::new(0.1, 0.2, 0.5)));
+    let material_left = Rc::new(Dielectric::new(1.5));
     let material_right = Rc::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 1.0));
 
     world.add(Rc::new(Sphere::with_center_and_radius(
@@ -75,7 +88,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     world.add(Rc::new(Sphere::with_center_and_radius(
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
-        material_left,
+        material_left.clone(),
+    )));
+    world.add(Rc::new(Sphere::with_center_and_radius(
+        Point3::new(-1.0, 0.0, -1.0),
+        -0.4,
+        material_left.clone(),
     )));
     world.add(Rc::new(Sphere::with_center_and_radius(
         Point3::new(1.0, 0.0, -1.0),
@@ -92,7 +110,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
     for j in (0..image_height).rev() {
-        eprintln!("\rScanlines remaining: {}", j);
+        print_progress(image_height - j, image_height);
+
         for i in 0..image_width {
             let mut pixel_color = Color::new(0.0, 0.0, 0.0);
 
