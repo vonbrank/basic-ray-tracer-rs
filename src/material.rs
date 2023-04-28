@@ -3,7 +3,7 @@ use std::{fmt::Debug, rc::Rc};
 use crate::{
     hittable::HitRecord,
     ray::Ray,
-    vec3::{random_unit_vector, reflect, Color, Vec3},
+    vec3::{random_in_unit_sphere, random_unit_vector, reflect, Color, Vec3},
 };
 
 pub trait Material: Debug {
@@ -63,11 +63,15 @@ impl Material for Lambertian {
 #[derive(Debug, Clone)]
 pub struct Metal {
     pub albedo: Color,
+    pub fuzz: f32,
 }
 
 impl Metal {
-    pub fn with_albedo(a: &Color) -> Metal {
-        Metal { albedo: *a }
+    pub fn new(a: &Color, f: f32) -> Metal {
+        Metal {
+            albedo: *a,
+            fuzz: if f < 1.0 { f } else { 1.0 },
+        }
     }
 }
 
@@ -82,7 +86,10 @@ impl Material for Metal {
         let reflected = reflect(&Vec3::unit_vector(&r_in.direction()), &rec.normal);
         std::mem::swap(
             scattered,
-            &mut Ray::with_origin_and_direction(&rec.p, &reflected),
+            &mut Ray::with_origin_and_direction(
+                &rec.p,
+                &(reflected + self.fuzz * random_in_unit_sphere()),
+            ),
         );
         std::mem::swap(attenuation, &mut self.albedo.clone());
         Vec3::dot(&scattered.direction(), &rec.normal) > 0.0
