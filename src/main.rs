@@ -1,4 +1,7 @@
-use std::{f32::EPSILON, rc::Rc};
+use std::{
+    f32::{consts::PI, EPSILON},
+    rc::Rc,
+};
 
 use hittable::{HitRecord, Hittable};
 use ray::Ray;
@@ -68,7 +71,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // World
 
+    let r = f32::cos(PI / 4.0);
     let mut world = HittableList::new();
+
+    // let material_left = Rc::new(Lambertian::with_albedo(&Color::new(0.0, 0.0, 1.0)));
+    // let material_right = Rc::new(Lambertian::with_albedo(&Color::new(1.0, 0.0, 0.0)));
+
+    // world.add(Rc::new(Sphere::with_center_and_radius(
+    //     Point3::new(-r, 0.0, -1.0),
+    //     r,
+    //     material_left,
+    // )));
+    // world.add(Rc::new(Sphere::with_center_and_radius(
+    //     Point3::new(r, 0.0, -1.0),
+    //     r,
+    //     material_right,
+    // )));
 
     let material_ground = Rc::new(Lambertian::with_albedo(&Color::new(0.8, 0.8, 0.0)));
     let material_center = Rc::new(Lambertian::with_albedo(&Color::new(0.1, 0.2, 0.5)));
@@ -92,7 +110,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )));
     world.add(Rc::new(Sphere::with_center_and_radius(
         Point3::new(-1.0, 0.0, -1.0),
-        -0.4,
+        -0.45,
         material_left.clone(),
     )));
     world.add(Rc::new(Sphere::with_center_and_radius(
@@ -103,7 +121,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Camera
 
-    let cam = Camera::new();
+    let cam = Camera::new(
+        &Point3::new(-2.0, 2.0, 1.0),
+        &Point3::new(0.0, 0.0, -1.0),
+        &Vec3::new(0.0, 1.0, 0.0),
+        20.0,
+        aspect_ratio,
+    );
 
     // Render
 
