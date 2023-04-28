@@ -8,7 +8,7 @@ use crate::{
     camera::Camera,
     color::write_color,
     hittable_list::HittableList,
-    spere::Sphere,
+    sphere::Sphere,
     utils::random_f32,
     vec3::{Color, Point3},
 };
@@ -18,7 +18,7 @@ mod color;
 mod hittable;
 mod hittable_list;
 mod ray;
-mod spere;
+mod sphere;
 mod utils;
 mod vec3;
 
