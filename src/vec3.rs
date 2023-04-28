@@ -1,4 +1,4 @@
-use std::ops;
+use std::{f32::EPSILON, ops};
 
 use crate::utils::{random_f32, random_f32_with_range};
 
@@ -61,6 +61,10 @@ impl Vec3 {
 
     pub fn unit_vector(v: &Vec3) -> Vec3 {
         *v / v.length()
+    }
+    pub fn near_zero(&self) -> bool {
+        let eps = EPSILON;
+        self.e.0.abs() < eps && self.e.1.abs() < eps && self.e.2.abs() < eps
     }
 }
 
@@ -172,4 +176,8 @@ pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
     } else {
         -in_unit_sphere
     }
+}
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    *v - 2.0 * Vec3::dot(v, n) * *n
 }

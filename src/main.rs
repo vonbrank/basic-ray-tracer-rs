@@ -8,6 +8,7 @@ use crate::{
     camera::Camera,
     color::write_color,
     hittable_list::HittableList,
+    material::{Lambertian, Metal},
     sphere::Sphere,
     utils::random_f32,
     vec3::{Color, Point3},
@@ -17,6 +18,7 @@ mod camera;
 mod color;
 mod hittable;
 mod hittable_list;
+mod material;
 mod ray;
 mod sphere;
 mod utils;
@@ -28,14 +30,13 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color {
     }
 
     let mut rec = HitRecord::new();
-    if world.hit(r, EPSILON, f32::MAX, &mut rec) {
-        let target = rec.p + random_in_hemisphere(&rec.normal);
-        return 0.5
-            * ray_color(
-                &Ray::with_origin_and_direction(&rec.p, &(target - rec.p)),
-                world,
-                depth - 1,
-            );
+    if world.hit(r, EPSILON * 100.0, f32::MAX, &mut rec) {
+        let mut scattered = Ray::new();
+        let mut attenuation = Color::new(0.0, 0.0, 0.0);
+        if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
+            return attenuation * ray_color(&scattered, world, depth - 1);
+        }
+        return Color::new(0.0, 0.0, 0.0);
     }
 
     let unit_direction = Vec3::unit_vector(&r.direction());
@@ -55,13 +56,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // World
 
     let mut world = HittableList::new();
-    world.add(Rc::new(Sphere::with_center_and_radius(
-        Point3::new(0.0, 0.0, -1.0),
-        0.5,
-    )));
+
+    let material_ground = Rc::new(Lambertian::with_albedo(&Color::new(0.8, 0.8, 0.0)));
+    let material_center = Rc::new(Lambertian::with_albedo(&Color::new(0.7, 0.3, 0.3)));
+    let material_left = Rc::new(Metal::with_albedo(&Color::new(0.8, 0.8, 0.8)));
+    let material_right = Rc::new(Metal::with_albedo(&Color::new(0.8, 0.6, 0.2)));
+
     world.add(Rc::new(Sphere::with_center_and_radius(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
+        material_ground,
+    )));
+    world.add(Rc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    )));
+    world.add(Rc::new(Sphere::with_center_and_radius(
+        Point3::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(Rc::new(Sphere::with_center_and_radius(
+        Point3::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
     )));
 
     // Camera
