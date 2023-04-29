@@ -1,3 +1,6 @@
+use hittable::{HitRecord, Hittable};
+use material::{EmptyMaterial, Material};
+use ray::Ray;
 use std::{
     f32::EPSILON,
     sync::{
@@ -5,21 +8,18 @@ use std::{
         Arc,
     },
     thread,
+    time::{Duration, Instant},
 };
-
-use hittable::{HitRecord, Hittable};
-use material::{EmptyMaterial, Material};
-use ray::Ray;
 use vec3::{random_in_hemisphere, random_in_unit_sphere, random_unit_vector, Vec3};
 
 use crate::{
     camera::Camera,
-    color::{to_color, write_color},
+    color::to_color,
     hittable_list::HittableList,
     material::{Dielectric, Lambertian, Metal},
     sphere::Sphere,
     thread_pool::ThreadPool,
-    utils::{random_f32, PixelInfo},
+    utils::{clean_screen, format_duration_hhmmss, random_f32, PixelInfo},
     vec3::{Color, Point3},
 };
 
@@ -40,7 +40,7 @@ fn ray_color(r: &Ray, world: Arc<HittableList>, depth: i32) -> Color {
     }
 
     let mut rec = HitRecord::new();
-    if world.hit(r, EPSILON * 100.0, f32::MAX, &mut rec) {
+    if world.hit(r, EPSILON * 9e4, f32::MAX, &mut rec) {
         let mut scattered = Ray::new();
         let mut attenuation = Color::new(0.0, 0.0, 0.0);
         if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
@@ -126,15 +126,17 @@ fn random_scene() -> HittableList {
     world
 }
 
-fn print_progress(current_pixel: usize, total_pixels: usize) {
+fn print_progress(current_pixel: usize, total_pixels: usize, current_duration: Duration) {
     let progress_bar_length = 25;
     let percentage = (current_pixel as f32 / total_pixels as f32 * 100.0) as i32;
     let progress = ((percentage as f32 / 100.0) * progress_bar_length as f32) as i32;
+    clean_screen();
     eprint!(
-        "\x1B[2K\x1B[1GRendering: [{}{}] {}%  {} pixel(s) rendered",
+        "Rendering: [{}{}] {}%\n{}   {} pixel(s) rendered",
         "#".repeat(progress as usize),
         "-".repeat((progress_bar_length - progress) as usize),
         percentage,
+        format_duration_hhmmss(current_duration),
         current_pixel,
     );
 }
@@ -183,11 +185,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let total_pixels = image_width * image_height;
         let mut buffer =
             vec![vec![Color::new(1.0, 1.0, 1.0); image_width as usize]; image_height as usize];
+
+        let start_time = Instant::now();
+        let mut last_print_time = start_time.clone();
+
         for i in 0..total_pixels {
             let pixel_info = receiver.recv().unwrap();
             buffer[pixel_info.v][pixel_info.u] = pixel_info.color;
-            if i % 100 == 0 || i == total_pixels - 1 {
-                print_progress(i + 1, total_pixels);
+
+            let current_time = Instant::now();
+            let elapsed_time = current_time.duration_since(last_print_time);
+            if elapsed_time >= Duration::from_secs(1) || i == total_pixels - 1 {
+                last_print_time = current_time;
+                print_progress(i + 1, total_pixels, current_time - start_time);
             }
         }
         for j in (0..image_height).rev() {

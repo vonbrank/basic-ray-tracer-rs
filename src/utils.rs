@@ -1,5 +1,9 @@
 use rand::{self, Rng};
-use std::f32::consts::PI;
+use std::{
+    f32::consts::PI,
+    io::{self, Write},
+    time::Duration,
+};
 
 use crate::vec3::Color;
 
@@ -20,4 +24,20 @@ pub struct PixelInfo {
     pub u: usize,
     pub v: usize,
     pub color: Color,
+}
+
+pub fn format_duration_hhmmss(duration: Duration) -> String {
+    let seconds = duration.as_secs();
+    let hours = seconds / 3600;
+    let minutes = (seconds % 3600) / 60;
+    let seconds = seconds % 60;
+
+    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+}
+
+pub fn clean_screen() {
+    io::stderr().flush().unwrap();
+    eprint!("\x1B[1F");
+    eprint!("\x1B[0G");
+    eprint!("\x1B[0J");
 }
