@@ -1,8 +1,4 @@
-use hittable::{HitRecord, Hittable};
-use material::{EmptyMaterial, Material};
-use ray::Ray;
 use std::{
-    f32::EPSILON,
     sync::{
         mpsc::{sync_channel, Receiver, SyncSender},
         Arc,
@@ -10,16 +6,13 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
-use vec3::{random_in_hemisphere, random_in_unit_sphere, random_unit_vector, Vec3};
+use vec3::Vec3;
 
 use crate::{
     camera::Camera,
     color::to_color,
-    hittable_list::HittableList,
-    material::{Dielectric, Lambertian, Metal},
-    sphere::Sphere,
     thread_pool::ThreadPool,
-    utils::{clean_screen, format_duration_hhmmss, random_f32, PixelInfo},
+    utils::{clean_screen, print_progress, random_f32, random_scene, ray_color, PixelInfo},
     vec3::{Color, Point3},
 };
 
@@ -34,118 +27,11 @@ mod thread_pool;
 mod utils;
 mod vec3;
 
-fn ray_color(r: &Ray, world: Arc<HittableList>, depth: i32) -> Color {
-    if depth <= 0 {
-        return Color::new(0.0, 0.0, 0.0);
-    }
-
-    let mut rec = HitRecord::new();
-    if world.hit(r, EPSILON * 9e4, f32::MAX, &mut rec) {
-        let mut scattered = Ray::new();
-        let mut attenuation = Color::new(0.0, 0.0, 0.0);
-        if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
-            return attenuation * ray_color(&scattered, world, depth - 1);
-        }
-        return Color::new(0.0, 0.0, 0.0);
-    }
-
-    let unit_direction = Vec3::unit_vector(&r.direction());
-    let t = 0.5 * (unit_direction.y() + 1.0);
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
-}
-
-fn random_scene() -> HittableList {
-    let mut world = HittableList::new();
-
-    let ground_material = Arc::new(Lambertian::with_albedo(&Color::new(0.5, 0.5, 0.5)));
-    world.add(Arc::new(Sphere::with_center_and_radius(
-        Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        ground_material,
-    )));
-
-    for a in -11..11 {
-        for b in -11..11 {
-            let choose_mat = random_f32();
-            let center = Point3::new(
-                a as f32 + 0.9 * random_f32(),
-                0.2,
-                b as f32 + 0.9 * random_f32(),
-            );
-
-            if (center - Point3::new(4.0, 0.2, 0.9)).length() > 0.9 {
-                let mut sphere_material: Arc<dyn Material> = Arc::new(EmptyMaterial {});
-
-                if choose_mat < 0.8 {
-                    let albedo = Color::random() * Color::random();
-                    sphere_material = Arc::new(Lambertian::with_albedo(&albedo));
-                    world.add(Arc::new(Sphere::with_center_and_radius(
-                        center,
-                        0.2,
-                        sphere_material.clone(),
-                    )));
-                } else if choose_mat < 0.95 {
-                    let albedo = Color::random_with_range(0.5, 1.0);
-                    sphere_material = Arc::new(Lambertian::with_albedo(&albedo));
-                    world.add(Arc::new(Sphere::with_center_and_radius(
-                        center,
-                        0.2,
-                        sphere_material.clone(),
-                    )));
-                } else {
-                    sphere_material = Arc::new(Dielectric::new(1.5));
-                    world.add(Arc::new(Sphere::with_center_and_radius(
-                        center,
-                        0.2,
-                        sphere_material.clone(),
-                    )));
-                }
-            }
-        }
-    }
-
-    let material1 = Arc::new(Dielectric::new(1.5));
-    world.add(Arc::new(Sphere::with_center_and_radius(
-        Point3::new(0.0, 1.0, 0.0),
-        1.0,
-        material1,
-    )));
-    let material2 = Arc::new(Lambertian::with_albedo(&Color::new(0.4, 0.2, 0.1)));
-    world.add(Arc::new(Sphere::with_center_and_radius(
-        Point3::new(-4.0, 1.0, 0.0),
-        1.0,
-        material2,
-    )));
-    let material3 = Arc::new(Metal::new(&Color::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Arc::new(Sphere::with_center_and_radius(
-        Point3::new(4.0, 1.0, 0.0),
-        1.0,
-        material3,
-    )));
-
-    world
-}
-
-fn print_progress(current_pixel: usize, total_pixels: usize, current_duration: Duration) {
-    let progress_bar_length = 25;
-    let percentage = (current_pixel as f32 / total_pixels as f32 * 100.0) as i32;
-    let progress = ((percentage as f32 / 100.0) * progress_bar_length as f32) as i32;
-    clean_screen();
-    eprint!(
-        "Rendering: [{}{}] {}%\n{}   {} pixel(s) rendered",
-        "#".repeat(progress as usize),
-        "-".repeat((progress_bar_length - progress) as usize),
-        percentage,
-        format_duration_hhmmss(current_duration),
-        current_pixel,
-    );
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image
 
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 1600;
+    let image_width = 960;
     let image_height = (image_width as f32 / aspect_ratio) as usize;
     let samples_per_pixel = 100;
     let max_depth = 50;
@@ -176,7 +62,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
-    let num_threads = 16;
+    let num_threads = num_cpus::get();
     let pool = ThreadPool::new(num_threads);
     let (sender, receiver): (SyncSender<PixelInfo>, Receiver<PixelInfo>) = sync_channel(16);
     let sender = Arc::new(sender);
@@ -188,6 +74,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let start_time = Instant::now();
         let mut last_print_time = start_time.clone();
+        let mut last_index = 0;
+        let mut first_print = true;
 
         for i in 0..total_pixels {
             let pixel_info = receiver.recv().unwrap();
@@ -197,7 +85,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let elapsed_time = current_time.duration_since(last_print_time);
             if elapsed_time >= Duration::from_secs(1) || i == total_pixels - 1 {
                 last_print_time = current_time;
-                print_progress(i + 1, total_pixels, current_time - start_time);
+                if first_print {
+                    first_print = false;
+                } else {
+                    clean_screen();
+                }
+                print_progress(
+                    i + 1,
+                    total_pixels,
+                    current_time - start_time,
+                    num_threads,
+                    i - last_index,
+                );
+                last_index = i;
             }
         }
         for j in (0..image_height).rev() {
