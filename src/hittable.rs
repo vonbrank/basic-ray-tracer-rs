@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     material::{EmptyMaterial, Material},
@@ -35,6 +35,6 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable: Send {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool;
 }

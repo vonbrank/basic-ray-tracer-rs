@@ -1,6 +1,9 @@
 use std::{
-    f32::{consts::PI, EPSILON},
-    sync::{Arc, Mutex},
+    f32::EPSILON,
+    sync::{
+        mpsc::{sync_channel, Receiver, SyncSender},
+        Arc,
+    },
     thread,
 };
 
@@ -15,7 +18,8 @@ use crate::{
     hittable_list::HittableList,
     material::{Dielectric, Lambertian, Metal},
     sphere::Sphere,
-    utils::random_f32,
+    thread_pool::ThreadPool,
+    utils::{random_f32, PixelInfo},
     vec3::{Color, Point3},
 };
 
@@ -26,10 +30,11 @@ mod hittable_list;
 mod material;
 mod ray;
 mod sphere;
+mod thread_pool;
 mod utils;
 mod vec3;
 
-fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color {
+fn ray_color(r: &Ray, world: Arc<HittableList>, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
@@ -121,16 +126,16 @@ fn random_scene() -> HittableList {
     world
 }
 
-fn print_progress(current_row: i32, max_height: i32) {
+fn print_progress(current_pixel: usize, total_pixels: usize) {
     let progress_bar_length = 25;
-    let percentage = (current_row as f32 / max_height as f32 * 100.0) as i32;
+    let percentage = (current_pixel as f32 / total_pixels as f32 * 100.0) as i32;
     let progress = ((percentage as f32 / 100.0) * progress_bar_length as f32) as i32;
     eprint!(
-        "\x1B[2K\x1B[1GRendering: [{}{}] {}% row-{}",
+        "\x1B[2K\x1B[1GRendering: [{}{}] {}%  {} pixel(s) rendered",
         "#".repeat(progress as usize),
         "-".repeat((progress_bar_length - progress) as usize),
         percentage,
-        current_row,
+        current_pixel,
     );
 }
 
@@ -139,13 +144,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 1600;
-    let image_height = (image_width as f32 / aspect_ratio) as i32;
+    let image_height = (image_width as f32 / aspect_ratio) as usize;
     let samples_per_pixel = 100;
     let max_depth = 50;
 
     // World
 
-    let world = random_scene();
+    let world = Arc::new(random_scene());
 
     // Camera
 
@@ -170,56 +175,55 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
     let num_threads = 16;
-    let buffer = Arc::new(Mutex::new(vec![
-        vec![
-            Color::new(1.0, 1.0, 1.0);
-            image_width as usize
-        ];
-        image_height as usize
-    ]));
+    let pool = ThreadPool::new(num_threads);
+    let (sender, receiver): (SyncSender<PixelInfo>, Receiver<PixelInfo>) = sync_channel(16);
+    let sender = Arc::new(sender);
 
-    let completed_count = Arc::new(Mutex::new(0));
-
-    let handles: Vec<_> = (0..num_threads)
-        .map(|thread_num: i32| {
-            let start_row = (thread_num as i32 * image_height / num_threads as i32) as usize;
-            let end_row = ((thread_num as i32 + 1) * image_height / num_threads as i32) as usize;
-            let local_world = Box::new(world.clone());
-            let loacl_buffer_mutext = buffer.clone();
-            let local_completed_count = completed_count.clone();
-            let handle = thread::spawn(move || {
-                for j in (start_row..end_row).rev() {
-                    for i in 0..image_width {
-                        let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-
-                        for _ in 0..samples_per_pixel {
-                            let u = (i as f32 + random_f32()) / (image_width as f32 - 1.0);
-                            let v = (j as f32 + random_f32()) / (image_height as f32 - 1.0);
-                            let ray = cam.get_ray(u, v);
-                            pixel_color += ray_color(&ray, &local_world, max_depth);
-                        }
-                        let mut current_buffer = loacl_buffer_mutext.lock().unwrap();
-                        current_buffer[j][i] = to_color(pixel_color, samples_per_pixel);
-                    }
-                    let mut val = local_completed_count.lock().unwrap();
-                    *val += 1;
-                    eprintln!("row {} completed at thread {}", val, thread_num);
-                }
-            });
-            handle
-        })
-        .collect();
-
-    for handle in handles {
-        handle.join().unwrap();
-    }
-
-    let current_buffer = buffer.lock().unwrap();
+    let handle = thread::spawn(move || {
+        let total_pixels = image_width * image_height;
+        let mut buffer =
+            vec![vec![Color::new(1.0, 1.0, 1.0); image_width as usize]; image_height as usize];
+        for i in 0..total_pixels {
+            let pixel_info = receiver.recv().unwrap();
+            buffer[pixel_info.v][pixel_info.u] = pixel_info.color;
+            if i % 100 == 0 || i == total_pixels - 1 {
+                print_progress(i + 1, total_pixels);
+            }
+        }
+        for j in (0..image_height).rev() {
+            for i in 0..image_width {
+                println!("{}", buffer[j][i]);
+            }
+        }
+    });
 
     for j in (0..image_height).rev() {
-        for i in 0..image_width {
-            println!("{}", current_buffer[j as usize][i]);
-        }
+        let arc_world = Arc::clone(&world);
+        let arc_sender = Arc::clone(&sender);
+        pool.execute(move || {
+            for i in 0..image_width {
+                let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+
+                for _ in 0..samples_per_pixel {
+                    let u = (i as f32 + random_f32()) / (image_width as f32 - 1.0);
+                    let v = (j as f32 + random_f32()) / (image_height as f32 - 1.0);
+                    let ray = cam.get_ray(u, v);
+                    pixel_color += ray_color(&ray, arc_world.clone(), max_depth);
+                }
+                pixel_color = to_color(pixel_color, samples_per_pixel);
+                arc_sender
+                    .send(PixelInfo {
+                        u: i,
+                        v: j as usize,
+                        color: pixel_color,
+                    })
+                    .unwrap();
+            }
+        });
+    }
+
+    if let Err(msg) = handle.join() {
+        eprintln!("\n{:?}", msg);
     }
 
     Ok(())

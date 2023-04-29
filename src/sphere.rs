@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     hittable::Hittable,
@@ -66,5 +66,3 @@ impl Hittable for Sphere {
         true
     }
 }
-
-unsafe impl Send for Sphere {}

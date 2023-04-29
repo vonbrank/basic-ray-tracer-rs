@@ -7,7 +7,7 @@ use crate::{
     vec3::{random_in_unit_sphere, random_unit_vector, reflect, refract, Color, Vec3},
 };
 
-pub trait Material: Debug {
+pub trait Material: Debug + Send + Sync {
     fn scatter(
         &self,
         r_in: &Ray,

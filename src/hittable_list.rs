@@ -2,7 +2,6 @@ use std::{rc::Rc, sync::Arc};
 
 use crate::hittable::{HitRecord, Hittable};
 
-#[derive(Clone)]
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
 }
@@ -47,5 +46,3 @@ impl Hittable for HittableList {
         hit_anything
     }
 }
-
-unsafe impl Send for HittableList {}
