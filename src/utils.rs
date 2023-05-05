@@ -1,5 +1,5 @@
 use crate::hittable::{HitRecord, Hittable};
-use crate::material::{EmptyMaterial, Material};
+use crate::moving_sphere::MovingSphere;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use rand::{self, Rng};
@@ -60,7 +60,7 @@ pub fn ray_color(r: &Ray, world: Arc<HittableList>, depth: i32) -> Color {
 
     let mut rec = HitRecord::new();
     if world.hit(r, EPSILON * 9e4, f32::MAX, &mut rec) {
-        let mut scattered = Ray::new();
+        let mut scattered = Ray::default();
         let mut attenuation = Color::new(0.0, 0.0, 0.0);
         if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
             return attenuation * ray_color(&scattered, world, depth - 1);
@@ -96,8 +96,12 @@ pub fn random_scene() -> HittableList {
                 if choose_mat < 0.7 {
                     let albedo = Color::random() * Color::random();
                     let sphere_material = Arc::new(Lambertian::with_albedo(&albedo));
-                    world.add(Arc::new(Sphere::with_center_and_radius(
+                    let center2 = center + Vec3::new(0.0, random_f32_with_range(0.0, 0.5), 0.0);
+                    world.add(Arc::new(MovingSphere::new(
                         center,
+                        center2,
+                        0.0,
+                        1.0,
                         0.2,
                         sphere_material.clone(),
                     )));

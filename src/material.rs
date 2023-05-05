@@ -55,7 +55,7 @@ impl Material for Lambertian {
 
         std::mem::swap(
             scattered,
-            &mut Ray::with_origin_and_direction(&rec.p, &scatter_direction),
+            &mut Ray::new(&rec.p, &scatter_direction, r_in.time()),
         );
         std::mem::swap(attenuation, &mut self.albedo.clone());
         true
@@ -87,9 +87,10 @@ impl Material for Metal {
         let reflected = reflect(&Vec3::unit_vector(&r_in.direction()), &rec.normal);
         std::mem::swap(
             scattered,
-            &mut Ray::with_origin_and_direction(
+            &mut Ray::new(
                 &rec.p,
                 &(reflected + self.fuzz * random_in_unit_sphere()),
+                r_in.time(),
             ),
         );
         std::mem::swap(attenuation, &mut self.albedo.clone());
@@ -139,18 +140,13 @@ impl Material for Dielectric {
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
 
-        let direction = if cannot_refract
-     
-        {
+        let direction = if cannot_refract {
             reflect(&unit_direction, &rec.normal)
         } else {
             refract(&unit_direction, &rec.normal, refraction_ratio)
         };
 
-        std::mem::swap(
-            scattered,
-            &mut Ray::with_origin_and_direction(&rec.p, &direction),
-        );
+        std::mem::swap(scattered, &mut Ray::new(&rec.p, &direction, r_in.time()));
         true
     }
 }

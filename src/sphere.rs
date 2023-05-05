@@ -28,6 +28,13 @@ impl Sphere {
             mat: m,
         }
     }
+    pub fn radius(&self) -> f32 {
+        self.radius
+    }
+
+    pub fn mat(&self) -> Arc<dyn Material> {
+        Arc::clone(&self.mat)
+    }
 }
 
 impl Hittable for Sphere {

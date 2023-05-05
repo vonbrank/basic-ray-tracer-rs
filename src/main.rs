@@ -21,6 +21,7 @@ mod color;
 mod hittable;
 mod hittable_list;
 mod material;
+mod moving_sphere;
 mod ray;
 mod sphere;
 mod thread_pool;
@@ -31,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image
 
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 960;
+    let image_width = 400;
     let image_height = (image_width as f32 / aspect_ratio) as usize;
     let samples_per_pixel = 100;
     let max_depth = 50;
@@ -56,6 +57,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         aspect_ratio,
         aperture,
         dist_to_focus,
+        0.0,
+        1.0,
     );
 
     // Render
