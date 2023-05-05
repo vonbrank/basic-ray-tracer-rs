@@ -29,7 +29,7 @@ impl BvhNode {
             let mut box_a = AABB::default();
             let mut box_b = AABB::default();
 
-            if !a.bounding_box(0.0, 0.0, &mut box_a) || !a.bounding_box(0.0, 0.0, &mut box_b) {
+            if !a.bounding_box(0.0, 0.0, &mut box_a) || !b.bounding_box(0.0, 0.0, &mut box_b) {
                 eprintln!("No bounding box in bvh construct.\n");
             }
 
