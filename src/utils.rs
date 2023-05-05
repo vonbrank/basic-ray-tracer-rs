@@ -31,6 +31,10 @@ pub fn random_f32_with_range(min: f32, max: f32) -> f32 {
     min + (max - min) * random_f32()
 }
 
+pub fn random_i32_with_range(min: i32, max: i32) -> i32 {
+    random_f32_with_range(min as f32, (max + 1) as f32) as i32
+}
+
 pub struct PixelInfo {
     pub u: usize,
     pub v: usize,

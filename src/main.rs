@@ -28,6 +28,7 @@ mod thread_pool;
 mod utils;
 mod vec3;
 mod aabb;
+mod bvh;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image

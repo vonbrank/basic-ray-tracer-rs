@@ -20,15 +20,15 @@ impl AABB {
         }
     }
 
-    fn min(&self) -> Point3 {
+    pub fn min(&self) -> Point3 {
         self.minimum
     }
 
-    fn max(&self) -> Point3 {
+    pub fn max(&self) -> Point3 {
         self.maximum
     }
 
-    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> bool {
+    pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> bool {
         let mut t_min = t_min;
         let mut t_max = t_max;
 
