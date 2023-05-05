@@ -10,7 +10,7 @@ use vec3::Vec3;
 
 use crate::{
     camera::Camera,
-    color::to_color,
+    color::{format_color, to_color},
     thread_pool::ThreadPool,
     utils::{clean_screen, print_progress, random_f32, random_scene, ray_color, PixelInfo},
     vec3::{Color, Point3},
@@ -105,7 +105,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         for j in (0..image_height).rev() {
             for i in 0..image_width {
-                println!("{}", buffer[j][i]);
+                println!("{}", format_color(&buffer[j][i]));
             }
         }
     });

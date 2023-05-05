@@ -2,18 +2,6 @@ use std::{fmt::Display, num};
 
 use crate::vec3::Color;
 
-impl Display for Color {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{} {} {}",
-            (256.0 * self.x().clamp(0.0, 0.999)) as i32,
-            (256.0 * self.y().clamp(0.0, 0.999)) as i32,
-            (256.0 * self.z().clamp(0.0, 0.999)) as i32
-        )
-    }
-}
-
 pub fn write_color(pixel_color: Color, samples_per_pixel: i32) {
     let mut r = pixel_color.x();
     let mut g = pixel_color.y();
@@ -24,7 +12,7 @@ pub fn write_color(pixel_color: Color, samples_per_pixel: i32) {
     g = (g * scale).sqrt();
     b = (b * scale).sqrt();
 
-    println!("{}", Color::new(r, g, b));
+    println!("{}", format_color(&Color::new(r, g, b)));
 }
 
 pub fn to_color(pixel_color: Color, samples_per_pixel: i32) -> Color {
@@ -38,4 +26,13 @@ pub fn to_color(pixel_color: Color, samples_per_pixel: i32) -> Color {
     b = (b * scale).sqrt();
 
     Color::new(r, g, b)
+}
+
+pub fn format_color(color: &Color) -> String {
+    format!(
+        "{} {} {}",
+        (256.0 * color.x().clamp(0.0, 0.999)) as i32,
+        (256.0 * color.y().clamp(0.0, 0.999)) as i32,
+        (256.0 * color.z().clamp(0.0, 0.999)) as i32
+    )
 }
