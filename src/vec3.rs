@@ -4,7 +4,7 @@ use crate::utils::{random_f32, random_f32_with_range};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Vec3 {
-    pub e: (f32, f32, f32),
+    pub e: [f32; 3],
 }
 
 pub type Point3 = Vec3;
@@ -12,7 +12,7 @@ pub type Color = Vec3;
 
 impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
-        Vec3 { e: (x, y, z) }
+        Vec3 { e: [x, y, z] }
     }
 
     pub fn random() -> Vec3 {
@@ -28,15 +28,15 @@ impl Vec3 {
     }
 
     pub fn x(&self) -> f32 {
-        self.e.0
+        self.e[0]
     }
 
     pub fn y(&self) -> f32 {
-        self.e.1
+        self.e[1]
     }
 
     pub fn z(&self) -> f32 {
-        self.e.2
+        self.e[2]
     }
 
     pub fn length(&self) -> f32 {
@@ -48,14 +48,14 @@ impl Vec3 {
     }
 
     pub fn dot(u: &Vec3, v: &Vec3) -> f32 {
-        u.e.0 * v.e.0 + u.e.1 * v.e.1 + u.e.2 * v.e.2
+        u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2]
     }
 
     pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
         Vec3::new(
-            u.e.1 * v.e.2 - u.e.2 * v.e.1,
-            u.e.2 * v.e.0 - u.e.0 * v.e.2,
-            u.e.0 * v.e.1 - u.e.1 * v.e.0,
+            u.e[1] * v.e[2] - u.e[2] * v.e[1],
+            u.e[2] * v.e[0] - u.e[0] * v.e[2],
+            u.e[0] * v.e[1] - u.e[1] * v.e[0],
         )
     }
 
@@ -64,7 +64,7 @@ impl Vec3 {
     }
     pub fn near_zero(&self) -> bool {
         let eps = EPSILON;
-        self.e.0.abs() < eps && self.e.1.abs() < eps && self.e.2.abs() < eps
+        self.e[0].abs() < eps && self.e[1].abs() < eps && self.e[2].abs() < eps
     }
 }
 
@@ -84,9 +84,9 @@ impl ops::Add for Vec3 {
 
 impl ops::AddAssign for Vec3 {
     fn add_assign(&mut self, rhs: Self) {
-        self.e.0 += rhs.e.0;
-        self.e.1 += rhs.e.1;
-        self.e.2 += rhs.e.2;
+        self.e[0] += rhs.e[0];
+        self.e[1] += rhs.e[1];
+        self.e[2] += rhs.e[2];
     }
 }
 
@@ -99,9 +99,9 @@ impl ops::Sub for Vec3 {
 
 impl ops::SubAssign for Vec3 {
     fn sub_assign(&mut self, rhs: Self) {
-        self.e.0 -= rhs.e.0;
-        self.e.1 -= rhs.e.1;
-        self.e.2 -= rhs.e.2;
+        self.e[0] -= rhs.e[0];
+        self.e[1] -= rhs.e[1];
+        self.e[2] -= rhs.e[2];
     }
 }
 
@@ -127,16 +127,16 @@ impl ops::Mul<Vec3> for f32 {
 
 impl ops::MulAssign<Self> for Vec3 {
     fn mul_assign(&mut self, rhs: Self) {
-        self.e.0 *= rhs.e.0;
-        self.e.1 *= rhs.e.1;
-        self.e.2 *= rhs.e.2;
+        self.e[0] *= rhs.e[0];
+        self.e[1] *= rhs.e[1];
+        self.e[2] *= rhs.e[2];
     }
 }
 impl ops::MulAssign<f32> for Vec3 {
     fn mul_assign(&mut self, rhs: f32) {
-        self.e.0 *= rhs;
-        self.e.1 *= rhs;
-        self.e.2 *= rhs;
+        self.e[0] *= rhs;
+        self.e[1] *= rhs;
+        self.e[2] *= rhs;
     }
 }
 
@@ -150,9 +150,16 @@ impl ops::Div<f32> for Vec3 {
 
 impl ops::DivAssign<f32> for Vec3 {
     fn div_assign(&mut self, rhs: f32) {
-        self.e.0 /= rhs;
-        self.e.1 /= rhs;
-        self.e.2 /= rhs;
+        self.e[0] /= rhs;
+        self.e[1] /= rhs;
+        self.e[2] /= rhs;
+    }
+}
+
+impl ops::Index<usize> for Vec3 {
+    type Output = f32;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.e[index]
     }
 }
 

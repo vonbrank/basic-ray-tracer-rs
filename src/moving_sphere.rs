@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
+    aabb::{surrounding_box, AABB},
     hittable::Hittable,
     material::Material,
     sphere::Sphere,
@@ -79,6 +80,20 @@ impl Hittable for MovingSphere {
         rec.set_face_normal(r, &outward_normal);
         rec.mat = Arc::clone(&self.mat());
 
+        true
+    }
+    fn bounding_box(&self, time0: f32, time1: f32, output_box: &mut crate::aabb::AABB) -> bool {
+        let box0 = AABB::new(
+            &(self.center(time0) - Vec3::new(self.radius(), self.radius(), self.radius())),
+            &(self.center(time1) + Vec3::new(self.radius(), self.radius(), self.radius())),
+        );
+        let box1 = AABB::new(
+            &(self.center(time0) - Vec3::new(self.radius(), self.radius(), self.radius())),
+            &(self.center(time1) + Vec3::new(self.radius(), self.radius(), self.radius())),
+        );
+
+        surrounding_box(box0, box1);
+        
         true
     }
 }

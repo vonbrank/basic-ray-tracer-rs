@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
+    aabb::AABB,
     hittable::Hittable,
     material::{EmptyMaterial, Material},
     vec3::{Point3, Vec3},
@@ -70,6 +71,16 @@ impl Hittable for Sphere {
         rec.set_face_normal(r, &outward_normal);
         rec.mat = Arc::clone(&self.mat);
 
+        true
+    }
+
+    fn bounding_box(&self, time0: f32, time1: f32, output_box: &mut crate::aabb::AABB) -> bool {
+        let mut aabb = AABB::new(
+            &(self.center - Vec3::new(self.radius, self.radius, self.radius)),
+            &(self.center + Vec3::new(self.radius, self.radius, self.radius)),
+        );
+
+        std::mem::swap(output_box, &mut aabb);
         true
     }
 }

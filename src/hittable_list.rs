@@ -1,6 +1,9 @@
 use std::{rc::Rc, sync::Arc};
 
-use crate::hittable::{HitRecord, Hittable};
+use crate::{
+    aabb::{surrounding_box, AABB},
+    hittable::{HitRecord, Hittable},
+};
 
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
@@ -44,5 +47,31 @@ impl Hittable for HittableList {
         }
 
         hit_anything
+    }
+
+    fn bounding_box(&self, time0: f32, time1: f32, output_box: &mut crate::aabb::AABB) -> bool {
+        if self.objects.is_empty() {
+            return false;
+        }
+
+        let mut temp_box = AABB::default();
+        let mut first_box = true;
+
+        for object in self.objects.iter() {
+            if !object.bounding_box(time0, time1, &mut temp_box) {
+                return false;
+            }
+            if first_box {
+                std::mem::swap(output_box, &mut temp_box);
+            } else {
+                std::mem::swap(
+                    &mut surrounding_box(output_box.clone(), temp_box),
+                    output_box,
+                );
+            }
+            first_box = false;
+        }
+
+        true
     }
 }
