@@ -29,6 +29,7 @@ mod utils;
 mod vec3;
 mod aabb;
 mod bvh;
+mod texture;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image

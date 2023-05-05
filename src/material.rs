@@ -1,8 +1,9 @@
-use std::{fmt::Debug, rc::Rc};
+use std::{fmt::Debug, rc::Rc, sync::Arc};
 
 use crate::{
     hittable::HitRecord,
     ray::Ray,
+    texture::{SolidColor, Texture},
     utils::random_f32,
     vec3::{random_in_unit_sphere, random_unit_vector, reflect, refract, Color, Vec3},
 };
@@ -25,17 +26,24 @@ impl Material for EmptyMaterial {}
 
 #[derive(Debug, Clone)]
 pub struct Lambertian {
-    pub albedo: Color,
+    pub albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    fn new() -> Lambertian {
+    // fn new() -> Lambertian {
+    //     Lambertian {
+    //         albedo: Color::new(0.0, 0.0, 0.0),
+    //     }
+    // }
+
+    pub fn with_color(a: &Color) -> Lambertian {
         Lambertian {
-            albedo: Color::new(0.0, 0.0, 0.0),
+            albedo: Arc::new(SolidColor::new(a.clone())),
         }
     }
-    pub fn with_albedo(a: &Color) -> Lambertian {
-        Lambertian { albedo: *a }
+
+    pub fn new(a: Arc<dyn Texture>) -> Lambertian {
+        Lambertian { albedo: a }
     }
 }
 
@@ -57,7 +65,7 @@ impl Material for Lambertian {
             scattered,
             &mut Ray::new(&rec.p, &scatter_direction, r_in.time()),
         );
-        std::mem::swap(attenuation, &mut self.albedo.clone());
+        std::mem::swap(attenuation, &mut self.albedo.value(rec.u, rec.v, &rec.p));
         true
     }
 }

@@ -13,6 +13,8 @@ pub struct HitRecord {
     pub t: f32,
     pub front_face: bool,
     pub mat: Arc<dyn Material>,
+    pub u: f32,
+    pub v: f32,
 }
 
 impl HitRecord {
@@ -23,6 +25,8 @@ impl HitRecord {
             t: 1.0,
             front_face: true,
             mat: Arc::new(EmptyMaterial {}),
+            u: 0.0,
+            v: 0.0,
         }
     }
 

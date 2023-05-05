@@ -1,6 +1,7 @@
 use crate::hittable::{HitRecord, Hittable};
 use crate::moving_sphere::MovingSphere;
 use crate::ray::Ray;
+use crate::texture::{CheckerTexture, SolidColor};
 use crate::vec3::Vec3;
 use rand::{self, Rng};
 use std::{
@@ -80,7 +81,11 @@ pub fn ray_color(r: &Ray, world: Arc<HittableList>, depth: i32) -> Color {
 pub fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    let ground_material = Arc::new(Lambertian::with_albedo(&Color::new(0.5, 0.5, 0.5)));
+    let checker = Arc::new(CheckerTexture::with_color(
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+    let ground_material = Arc::new(Lambertian::new(checker));
     world.add(Arc::new(Sphere::with_center_and_radius(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -99,7 +104,8 @@ pub fn random_scene() -> HittableList {
             if (center - Point3::new(4.0, 0.2, 0.9)).length() > 0.9 {
                 if choose_mat < 0.7 {
                     let albedo = Color::random() * Color::random();
-                    let sphere_material = Arc::new(Lambertian::with_albedo(&albedo));
+                    let sphere_material =
+                        Arc::new(Lambertian::new(Arc::new(SolidColor::new(albedo))));
                     let center2 = center + Vec3::new(0.0, random_f32_with_range(0.0, 0.5), 0.0);
                     world.add(Arc::new(MovingSphere::new(
                         center,
@@ -111,7 +117,8 @@ pub fn random_scene() -> HittableList {
                     )));
                 } else if choose_mat < 0.9 {
                     let albedo = Color::random_with_range(0.5, 1.0);
-                    let sphere_material = Arc::new(Lambertian::with_albedo(&albedo));
+                    let sphere_material =
+                        Arc::new(Lambertian::new(Arc::new(SolidColor::new(albedo))));
                     world.add(Arc::new(Sphere::with_center_and_radius(
                         center,
                         0.2,
@@ -147,7 +154,7 @@ pub fn random_scene() -> HittableList {
         -0.9,
         material1.clone(),
     )));
-    let material2 = Arc::new(Lambertian::with_albedo(&Color::new(0.4, 0.2, 0.1)));
+    let material2 = Arc::new(Lambertian::with_color(&Color::new(0.4, 0.2, 0.1)));
     world.add(Arc::new(Sphere::with_center_and_radius(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
