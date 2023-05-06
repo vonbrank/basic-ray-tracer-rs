@@ -85,10 +85,10 @@ impl Hittable for MovingSphere {
     fn bounding_box(&self, time0: f32, time1: f32, output_box: &mut crate::aabb::AABB) -> bool {
         let box0 = AABB::new(
             &(self.center(time0) - Vec3::new(self.radius(), self.radius(), self.radius())),
-            &(self.center(time1) + Vec3::new(self.radius(), self.radius(), self.radius())),
+            &(self.center(time0) + Vec3::new(self.radius(), self.radius(), self.radius())),
         );
         let box1 = AABB::new(
-            &(self.center(time0) - Vec3::new(self.radius(), self.radius(), self.radius())),
+            &(self.center(time1) - Vec3::new(self.radius(), self.radius(), self.radius())),
             &(self.center(time1) + Vec3::new(self.radius(), self.radius(), self.radius())),
         );
 

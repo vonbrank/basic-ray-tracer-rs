@@ -56,19 +56,16 @@ impl BvhNode {
                 _ => (Arc::clone(&objects[start + 1]), Arc::clone(&objects[start])),
             },
             _ => {
-                objects.sort_by(comparator);
+                let slice = &mut objects[start..end];
+                slice.sort_by(comparator);
+
                 let mid = start + object_span / 2;
 
                 let left: Arc<dyn Hittable> = Arc::new(BvhNode::with_hittable_vec(
                     &objects, start, mid, time0, time1,
                 ));
-                let right: Arc<dyn Hittable> = Arc::new(BvhNode::with_hittable_vec(
-                    &objects,
-                    mid + 1,
-                    end,
-                    time0,
-                    time1,
-                ));
+                let right: Arc<dyn Hittable> =
+                    Arc::new(BvhNode::with_hittable_vec(&objects, mid, end, time0, time1));
                 (left, right)
             }
         };
@@ -108,7 +105,9 @@ impl Hittable for BvhNode {
             return false;
         }
         let hit_left = self.left.hit(r, t_min, t_max, rec);
-        let hit_right = self.right.hit(r, t_min, t_max, rec);
+        let hit_right = self
+            .right
+            .hit(r, t_min, if hit_left { rec.t } else { t_max }, rec);
         return hit_left || hit_right;
     }
 

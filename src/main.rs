@@ -9,6 +9,7 @@ use std::{
 use vec3::Vec3;
 
 use crate::{
+    bvh::BvhNode,
     camera::Camera,
     color::{format_color, to_color},
     thread_pool::ThreadPool,
@@ -16,6 +17,8 @@ use crate::{
     vec3::{Color, Point3},
 };
 
+mod aabb;
+mod bvh;
 mod camera;
 mod color;
 mod hittable;
@@ -24,12 +27,10 @@ mod material;
 mod moving_sphere;
 mod ray;
 mod sphere;
+mod texture;
 mod thread_pool;
 mod utils;
 mod vec3;
-mod aabb;
-mod bvh;
-mod texture;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image
@@ -42,7 +43,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // World
 
-    let world = Arc::new(random_scene());
+    let world = Arc::new(BvhNode::with_hittable_list(&random_scene(), 0.0, 1.0));
+    // let world = Arc::new(random_scene());
 
     // Camera
 

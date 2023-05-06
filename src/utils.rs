@@ -58,7 +58,7 @@ pub fn clean_screen() {
     eprint!("\x1B[0J");
 }
 
-pub fn ray_color(r: &Ray, world: Arc<HittableList>, depth: i32) -> Color {
+pub fn ray_color(r: &Ray, world: Arc<dyn Hittable>, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
@@ -107,14 +107,19 @@ pub fn random_scene() -> HittableList {
                     let sphere_material =
                         Arc::new(Lambertian::new(Arc::new(SolidColor::new(albedo))));
                     let center2 = center + Vec3::new(0.0, random_f32_with_range(0.0, 0.5), 0.0);
-                    world.add(Arc::new(MovingSphere::new(
+                    world.add(Arc::new(Sphere::with_center_and_radius(
                         center,
-                        center2,
-                        0.0,
-                        1.0,
                         0.2,
                         sphere_material.clone(),
                     )));
+                    // world.add(Arc::new(MovingSphere::new(
+                    //     center,
+                    //     center2,
+                    //     0.0,
+                    //     1.0,
+                    //     0.2,
+                    //     sphere_material.clone(),
+                    // )));
                 } else if choose_mat < 0.9 {
                     let albedo = Color::random_with_range(0.5, 1.0);
                     let sphere_material =
