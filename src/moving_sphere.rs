@@ -83,17 +83,19 @@ impl Hittable for MovingSphere {
         true
     }
     fn bounding_box(&self, time0: f32, time1: f32, output_box: &mut crate::aabb::AABB) -> bool {
+        let abs_radius = self.radius();
+
         let box0 = AABB::new(
-            &(self.center(time0) - Vec3::new(self.radius(), self.radius(), self.radius())),
-            &(self.center(time0) + Vec3::new(self.radius(), self.radius(), self.radius())),
+            &(self.center(time0) - Vec3::new(abs_radius, abs_radius, abs_radius)),
+            &(self.center(time0) + Vec3::new(abs_radius, abs_radius, abs_radius)),
         );
         let box1 = AABB::new(
-            &(self.center(time1) - Vec3::new(self.radius(), self.radius(), self.radius())),
-            &(self.center(time1) + Vec3::new(self.radius(), self.radius(), self.radius())),
+            &(self.center(time1) - Vec3::new(abs_radius, abs_radius, abs_radius)),
+            &(self.center(time1) + Vec3::new(abs_radius, abs_radius, abs_radius)),
         );
 
-        surrounding_box(box0, box1);
-        
+        std::mem::swap(output_box, &mut surrounding_box(box0, box1));
+
         true
     }
 }

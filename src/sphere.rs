@@ -84,9 +84,11 @@ impl Hittable for Sphere {
     }
 
     fn bounding_box(&self, time0: f32, time1: f32, output_box: &mut crate::aabb::AABB) -> bool {
+        let abs_radius = f32::abs(self.radius());
+
         let mut aabb = AABB::new(
-            &(self.center - Vec3::new(self.radius, self.radius, self.radius)),
-            &(self.center + Vec3::new(self.radius, self.radius, self.radius)),
+            &(self.center - Vec3::new(abs_radius, abs_radius, abs_radius)),
+            &(self.center + Vec3::new(abs_radius, abs_radius, abs_radius)),
         );
 
         std::mem::swap(output_box, &mut aabb);
