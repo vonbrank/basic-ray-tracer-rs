@@ -12,8 +12,12 @@ use crate::{
     bvh::BvhNode,
     camera::Camera,
     color::{format_color, to_color},
+    hittable::Hittable,
+    hittable_list::HittableList,
     thread_pool::ThreadPool,
-    utils::{clean_screen, print_progress, random_f32, random_scene, ray_color, PixelInfo},
+    utils::{
+        clean_screen, print_progress, random_f32, random_scene, ray_color, two_shpheres, PixelInfo,
+    },
     vec3::{Color, Point3},
 };
 
@@ -43,22 +47,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // World
 
-    let world = Arc::new(BvhNode::with_hittable_list(&random_scene(), 0.0, 1.0));
-    // let world = Arc::new(random_scene());
+    let mut world: Arc<dyn Hittable> = Arc::new(HittableList::new());
+    let mut look_from = Point3::default();
+    let mut look_at = Point3::default();
+    let mut vfov = 4.0;
+    let mut aperture = 0.0;
+
+    let world_type = 0;
+
+    match world_type {
+        1 => {
+            world = Arc::new(BvhNode::with_hittable_list(&random_scene(), 0.0, 1.0));
+            look_from = Point3::new(13.0, 2.0, 3.0);
+            look_at = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+            aperture = 0.1;
+        }
+        _ => {
+            world = Arc::new(BvhNode::with_hittable_list(&two_shpheres(), 0.0, 1.0));
+            look_from = Point3::new(13.0, 2.0, 3.0);
+            look_at = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        }
+    }
 
     // Camera
 
-    let look_from = Point3::new(13.0, 2.0, 3.0);
-    let look_at = Point3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
-    let aperture = 0.1;
 
     let cam = Camera::new(
         &look_from,
         &look_at,
         &vup,
-        20.0,
+        vfov,
         aspect_ratio,
         aperture,
         dist_to_focus,

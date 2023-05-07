@@ -170,6 +170,28 @@ pub fn random_scene() -> HittableList {
     world
 }
 
+pub fn two_shpheres() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let checker = Arc::new(CheckerTexture::with_color(
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+
+    objects.add(Arc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, -10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::new(checker.clone())),
+    )));
+    objects.add(Arc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, 10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::new(checker.clone())),
+    )));
+
+    objects
+}
+
 pub fn print_progress(
     current_pixel: usize,
     total_pixels: usize,
