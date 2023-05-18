@@ -1,6 +1,9 @@
 use std::{fmt::Debug, sync::Arc};
 
-use crate::{vec3::{Color, Point3}, perlin::Perlin};
+use crate::{
+    perlin::Perlin,
+    vec3::{Color, Point3},
+};
 
 pub trait Texture: Debug + Send + Sync {
     fn value(&self, u: f32, v: f32, p: &Point3) -> Color;
@@ -59,17 +62,30 @@ impl Texture for CheckerTexture {
 }
 #[derive(Debug)]
 pub struct NoiseTexture {
-    noise: Perlin
+    noise: Perlin,
+    scale: f32,
 }
 
 impl NoiseTexture {
-    pub fn new() -> NoiseTexture {
-        NoiseTexture { noise: Perlin::new() }
+    pub fn default() -> NoiseTexture {
+        NoiseTexture {
+            noise: Perlin::new(),
+            scale: 1.0,
+        }
+    }
+
+    pub fn new(scale: f32) -> NoiseTexture {
+        NoiseTexture {
+            noise: Perlin::new(),
+            scale,
+        }
     }
 }
 
 impl Texture for NoiseTexture {
     fn value(&self, u: f32, v: f32, p: &Point3) -> Color {
-        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
+        Color::new(1.0, 1.0, 1.0)
+            * 0.5
+            * (1.0 + f32::sin(self.scale * p.z() + 10.0 * self.noise.turb(p, 7)))
     }
 }

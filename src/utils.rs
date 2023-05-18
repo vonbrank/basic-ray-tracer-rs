@@ -195,7 +195,7 @@ pub fn two_shpheres() -> HittableList {
 pub fn two_perlin_shpheres() -> HittableList {
     let mut objects = HittableList::new();
 
-    let perlin_texture = Arc::new(NoiseTexture::new());
+    let perlin_texture = Arc::new(NoiseTexture::new(4.0));
 
     objects.add(Arc::new(Sphere::with_center_and_radius(
         Point3::new(0.0, -1000.0, 0.0),
