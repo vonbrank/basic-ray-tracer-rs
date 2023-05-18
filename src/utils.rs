@@ -1,7 +1,7 @@
 use crate::hittable::{HitRecord, Hittable};
 use crate::moving_sphere::MovingSphere;
 use crate::ray::Ray;
-use crate::texture::{CheckerTexture, SolidColor, NoiseTexture};
+use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture, SolidColor};
 use crate::vec3::Vec3;
 use rand::{self, Rng};
 use std::{
@@ -206,6 +206,21 @@ pub fn two_perlin_shpheres() -> HittableList {
         Point3::new(0.0, 2.0, 0.0),
         2.0,
         Arc::new(Lambertian::new(perlin_texture.clone())),
+    )));
+
+    objects
+}
+
+pub fn hittable_list_earth() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let image_texture = Arc::new(ImageTexture::new("assets/earthmap.jpg".to_string()));
+    let earth_surface = Arc::new(Lambertian::new(image_texture));
+
+    objects.add(Arc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, 0.0, 0.0),
+        2.0,
+        earth_surface,
     )));
 
     objects
