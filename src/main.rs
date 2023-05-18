@@ -16,7 +16,7 @@ use crate::{
     hittable_list::HittableList,
     thread_pool::ThreadPool,
     utils::{
-        clean_screen, print_progress, random_f32, random_scene, ray_color, two_shpheres, PixelInfo,
+        clean_screen, print_progress, random_f32, random_scene, ray_color, two_shpheres, PixelInfo, two_perlin_shpheres,
     },
     vec3::{Color, Point3},
 };
@@ -35,6 +35,7 @@ mod texture;
 mod thread_pool;
 mod utils;
 mod vec3;
+mod perlin;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image
@@ -63,8 +64,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             vfov = 20.0;
             aperture = 0.1;
         }
-        _ => {
+        2 => {
             world = Arc::new(BvhNode::with_hittable_list(&two_shpheres(), 0.0, 1.0));
+            look_from = Point3::new(13.0, 2.0, 3.0);
+            look_at = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        }
+        _ => {
+            world = Arc::new(BvhNode::with_hittable_list(&two_perlin_shpheres(), 0.0, 1.0));
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;

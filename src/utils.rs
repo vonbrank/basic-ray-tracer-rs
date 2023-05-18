@@ -1,7 +1,7 @@
 use crate::hittable::{HitRecord, Hittable};
 use crate::moving_sphere::MovingSphere;
 use crate::ray::Ray;
-use crate::texture::{CheckerTexture, SolidColor};
+use crate::texture::{CheckerTexture, SolidColor, NoiseTexture};
 use crate::vec3::Vec3;
 use rand::{self, Rng};
 use std::{
@@ -187,6 +187,25 @@ pub fn two_shpheres() -> HittableList {
         Point3::new(0.0, 10.0, 0.0),
         10.0,
         Arc::new(Lambertian::new(checker.clone())),
+    )));
+
+    objects
+}
+
+pub fn two_perlin_shpheres() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let perlin_texture = Arc::new(NoiseTexture::new());
+
+    objects.add(Arc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new(perlin_texture.clone())),
+    )));
+    objects.add(Arc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new(perlin_texture.clone())),
     )));
 
     objects
