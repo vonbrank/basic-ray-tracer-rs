@@ -2,8 +2,6 @@ use crate::{
     utils::{random_f32, random_i32_with_range},
     vec3::{Point3, Vec3},
 };
-
-const point_count: usize = 256;
 #[derive(Debug)]
 pub struct Perlin {
     rand_vec: Vec<Vec3>,
@@ -13,10 +11,12 @@ pub struct Perlin {
 }
 
 impl Perlin {
+    const point_count: usize = 256;
+
     pub fn new() -> Perlin {
-        let mut ranfloat = Vec::with_capacity(point_count);
-        for i in 0..point_count {
-            ranfloat.push(Vec3::random_with_range(-1.0, 1.0));
+        let mut rand_vec = Vec::with_capacity(Perlin::point_count);
+        for i in 0..Perlin::point_count {
+            rand_vec.push(Vec3::random_with_range(-1.0, 1.0));
         }
 
         let perm_x = Perlin::perlin_generate_perm();
@@ -24,7 +24,7 @@ impl Perlin {
         let perm_z = Perlin::perlin_generate_perm();
 
         Perlin {
-            rand_vec: ranfloat,
+            rand_vec,
             perm_x,
             perm_y,
             perm_z,
@@ -69,12 +69,12 @@ impl Perlin {
     }
 
     fn perlin_generate_perm() -> Vec<i32> {
-        let mut p = Vec::with_capacity(point_count);
-        for i in 0..point_count {
+        let mut p = Vec::with_capacity(Perlin::point_count);
+        for i in 0..Perlin::point_count {
             p.push(i as i32);
         }
 
-        Perlin::permute(&mut p, point_count);
+        Perlin::permute(&mut p, Perlin::point_count);
 
         p
     }
