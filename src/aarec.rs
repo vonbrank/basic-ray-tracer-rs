@@ -152,7 +152,7 @@ impl Hittable for XZRect {
         rec.u = (x - self.x0) / (self.x1 - self.x0);
         rec.v = (z - self.z0) / (self.z1 - self.z0);
         rec.t = t;
-        let outward_normal = Vec3::new(0.0, 0.0, 1.0);
+        let outward_normal = Vec3::new(0.0, 1.0, 0.0);
         rec.set_face_normal(r, &outward_normal);
         rec.mat = self.mat.clone();
         rec.p = r.at(t);
@@ -229,7 +229,7 @@ impl Hittable for YZRect {
         rec.u = (y - self.y0) / (self.y1 - self.y0);
         rec.v = (z - self.z0) / (self.z1 - self.z0);
         rec.t = t;
-        let outward_normal = Vec3::new(0.0, 0.0, 1.0);
+        let outward_normal = Vec3::new(1.0, 0.0, 0.0);
         rec.set_face_normal(r, &outward_normal);
         rec.mat = self.mat.clone();
         rec.p = r.at(t);

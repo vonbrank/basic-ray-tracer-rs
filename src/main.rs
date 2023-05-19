@@ -16,8 +16,8 @@ use crate::{
     hittable_list::HittableList,
     thread_pool::ThreadPool,
     utils::{
-        clean_screen, hittable_list_earth, hittable_list_simple_light, print_progress, random_f32,
-        random_scene, ray_color, two_perlin_shpheres, two_shpheres, PixelInfo,
+        clean_screen, cornell_box, hittable_list_earth, hittable_list_simple_light, print_progress,
+        random_f32, random_scene, ray_color, two_perlin_shpheres, two_shpheres, PixelInfo,
     },
     vec3::{Color, Point3},
 };
@@ -42,11 +42,11 @@ mod vec3;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image
 
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
-    let image_height = (image_width as f32 / aspect_ratio) as usize;
+    let mut aspect_ratio = 16.0 / 9.0;
+    let mut image_width = 400;
+    let mut image_height = (image_width as f32 / aspect_ratio) as usize;
     let mut samples_per_pixel = 100;
-    let max_depth = 50;
+    let mut max_depth = 50;
 
     // World
 
@@ -97,7 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             vfov = 20.0;
             background = Color::new(0.7, 0.8, 1.0);
         }
-        _ => {
+        5 => {
             world = Arc::new(BvhNode::with_hittable_list(
                 &&hittable_list_simple_light(),
                 0.0,
@@ -108,6 +108,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             vfov = 20.0;
             background = Color::new(0.0, 0.0, 0.0);
             samples_per_pixel = 400;
+        }
+        _ => {
+            world = Arc::new(BvhNode::with_hittable_list(&cornell_box(), 0.0, 1.0));
+            aspect_ratio = 1.0;
+            image_width = 600;
+            image_height = 600;
+            samples_per_pixel = 200;
+            background = Color::new(0.0, 0.0, 0.0);
+            look_from = Point3::new(278.0, 278.0, -800.0);
+            look_at = Point3::new(278.0, 278.0, 0.0);
+            vfov = 40.0;
         }
     }
 

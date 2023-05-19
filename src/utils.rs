@@ -1,4 +1,4 @@
-use crate::aarec::XYRect;
+use crate::aarec::{XYRect, XZRect, YZRect};
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::DiffuseLight;
 use crate::moving_sphere::MovingSphere;
@@ -257,6 +257,66 @@ pub fn hittable_list_simple_light() -> HittableList {
         3.0,
         -2.0,
         diffuse_light.clone(),
+    )));
+
+    objects
+}
+
+pub fn cornell_box() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let red = Arc::new(Lambertian::with_color(&Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::with_color(&Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::with_color(&Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::with_color(Color::new(15.0, 15.0, 15.0)));
+
+    objects.add(Arc::new(YZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        green.clone(),
+    )));
+    objects.add(Arc::new(YZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        red.clone(),
+    )));
+    objects.add(Arc::new(XZRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        light.clone(),
+    )));
+    objects.add(Arc::new(XZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    )));
+    objects.add(Arc::new(XZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+    objects.add(Arc::new(XYRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
     )));
 
     objects
