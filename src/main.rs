@@ -16,12 +16,14 @@ use crate::{
     hittable_list::HittableList,
     thread_pool::ThreadPool,
     utils::{
-        clean_screen, print_progress, random_f32, random_scene, ray_color, two_shpheres, PixelInfo, two_perlin_shpheres, hittable_list_earth,
+        clean_screen, hittable_list_earth, hittable_list_simple_light, print_progress, random_f32,
+        random_scene, ray_color, two_perlin_shpheres, two_shpheres, PixelInfo,
     },
     vec3::{Color, Point3},
 };
 
 mod aabb;
+mod aarec;
 mod bvh;
 mod camera;
 mod color;
@@ -29,13 +31,13 @@ mod hittable;
 mod hittable_list;
 mod material;
 mod moving_sphere;
+mod perlin;
 mod ray;
 mod sphere;
 mod texture;
 mod thread_pool;
 mod utils;
 mod vec3;
-mod perlin;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image
@@ -43,7 +45,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let image_height = (image_width as f32 / aspect_ratio) as usize;
-    let samples_per_pixel = 100;
+    let mut samples_per_pixel = 100;
     let max_depth = 50;
 
     // World
@@ -74,21 +76,38 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             background = Color::new(0.7, 0.8, 1.0);
         }
         3 => {
-            world = Arc::new(BvhNode::with_hittable_list(&two_perlin_shpheres(), 0.0, 1.0));
+            world = Arc::new(BvhNode::with_hittable_list(
+                &two_perlin_shpheres(),
+                0.0,
+                1.0,
+            ));
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
             background = Color::new(0.7, 0.8, 1.0);
         }
         4 => {
-            world = Arc::new(BvhNode::with_hittable_list(&hittable_list_earth(), 0.0, 1.0));
+            world = Arc::new(BvhNode::with_hittable_list(
+                &hittable_list_earth(),
+                0.0,
+                1.0,
+            ));
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
             background = Color::new(0.7, 0.8, 1.0);
         }
         _ => {
+            world = Arc::new(BvhNode::with_hittable_list(
+                &&hittable_list_simple_light(),
+                0.0,
+                1.0,
+            ));
+            look_from = Point3::new(26.0, 3.0, 6.0);
+            look_at = Point3::new(0.0, 2.0, 0.0);
+            vfov = 20.0;
             background = Color::new(0.0, 0.0, 0.0);
+            samples_per_pixel = 400;
         }
     }
 

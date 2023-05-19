@@ -1,4 +1,6 @@
+use crate::aarec::XYRect;
 use crate::hittable::{HitRecord, Hittable};
+use crate::material::DiffuseLight;
 use crate::moving_sphere::MovingSphere;
 use crate::ray::Ray;
 use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture, SolidColor};
@@ -222,6 +224,39 @@ pub fn hittable_list_earth() -> HittableList {
         Point3::new(0.0, 0.0, 0.0),
         2.0,
         earth_surface,
+    )));
+
+    objects
+}
+
+pub fn hittable_list_simple_light() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let perlin_texture = Arc::new(NoiseTexture::new(4.0));
+    objects.add(Arc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new(perlin_texture.clone())),
+    )));
+    objects.add(Arc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new(perlin_texture.clone())),
+    )));
+
+    let diffuse_light = Arc::new(DiffuseLight::with_color(Color::new(4.0, 4.0, 4.0)));
+    objects.add(Arc::new(Sphere::with_center_and_radius(
+        Point3::new(0.0, 7.0, 0.0),
+        2.0,
+        diffuse_light.clone(),
+    )));
+    objects.add(Arc::new(XYRect::new(
+        3.0,
+        5.0,
+        1.0,
+        3.0,
+        -2.0,
+        diffuse_light.clone(),
     )));
 
     objects
