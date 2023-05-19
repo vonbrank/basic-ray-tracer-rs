@@ -5,7 +5,7 @@ use crate::{
     ray::Ray,
     texture::{SolidColor, Texture},
     utils::random_f32,
-    vec3::{random_in_unit_sphere, random_unit_vector, reflect, refract, Color, Vec3},
+    vec3::{random_in_unit_sphere, random_unit_vector, reflect, refract, Color, Point3, Vec3},
 };
 
 pub trait Material: Debug + Send + Sync {
@@ -17,6 +17,10 @@ pub trait Material: Debug + Send + Sync {
         scattered: &mut Ray,
     ) -> bool {
         false
+    }
+
+    fn emitted(&self, u: f32, v: f32, p: &Point3) -> Color {
+        Color::new(0.0, 0.0, 0.0)
     }
 }
 #[derive(Debug, Clone)]
@@ -156,5 +160,37 @@ impl Material for Dielectric {
 
         std::mem::swap(scattered, &mut Ray::new(&rec.p, &direction, r_in.time()));
         true
+    }
+}
+#[derive(Debug)]
+pub struct DiffuseLight {
+    emit: Arc<dyn Texture>,
+}
+
+impl DiffuseLight {
+    pub fn with_texture(a: Arc<dyn Texture>) -> DiffuseLight {
+        DiffuseLight { emit: a }
+    }
+
+    pub fn with_color(c: Color) -> DiffuseLight {
+        DiffuseLight {
+            emit: Arc::new(SolidColor::new(c)),
+        }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        rec: &HitRecord,
+        attenuation: &mut Color,
+        scattered: &mut Ray,
+    ) -> bool {
+        false
+    }
+
+    fn emitted(&self, u: f32, v: f32, p: &Point3) -> Color {
+        self.emit.value(u, v, p)
     }
 }

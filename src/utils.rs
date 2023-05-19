@@ -58,24 +58,25 @@ pub fn clean_screen() {
     eprint!("\x1B[0J");
 }
 
-pub fn ray_color(r: &Ray, world: Arc<dyn Hittable>, depth: i32) -> Color {
+pub fn ray_color(r: &Ray, background: &Color, world: Arc<dyn Hittable>, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
 
     let mut rec = HitRecord::new();
-    if world.hit(r, EPSILON * 9e4, f32::MAX, &mut rec) {
-        let mut scattered = Ray::default();
-        let mut attenuation = Color::new(0.0, 0.0, 0.0);
-        if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
-            return attenuation * ray_color(&scattered, world, depth - 1);
-        }
-        return Color::new(0.0, 0.0, 0.0);
+    if !world.hit(r, EPSILON * 9e4, f32::MAX, &mut rec) {
+        return background.clone();
     }
 
-    let unit_direction = Vec3::unit_vector(&r.direction());
-    let t = 0.5 * (unit_direction.y() + 1.0);
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+    let mut scattered = Ray::default();
+    let mut attenuation = Color::default();
+    let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p);
+
+    if !rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
+        return emitted;
+    }
+
+    emitted + attenuation * ray_color(&scattered, background, world, depth - 1)
 }
 
 pub fn random_scene() -> HittableList {

@@ -53,6 +53,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut look_at = Point3::default();
     let mut vfov = 4.0;
     let mut aperture = 0.0;
+    let mut background = Color::default();
 
     let world_type = 0;
 
@@ -63,24 +64,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
             aperture = 0.1;
+            background = Color::new(0.7, 0.8, 1.0);
         }
         2 => {
             world = Arc::new(BvhNode::with_hittable_list(&two_shpheres(), 0.0, 1.0));
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
+            background = Color::new(0.7, 0.8, 1.0);
         }
         3 => {
             world = Arc::new(BvhNode::with_hittable_list(&two_perlin_shpheres(), 0.0, 1.0));
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
+            background = Color::new(0.7, 0.8, 1.0);
         }
-        _ => {
+        4 => {
             world = Arc::new(BvhNode::with_hittable_list(&hittable_list_earth(), 0.0, 1.0));
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
+            background = Color::new(0.7, 0.8, 1.0);
+        }
+        _ => {
+            background = Color::new(0.0, 0.0, 0.0);
         }
     }
 
@@ -161,7 +169,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let u = (i as f32 + random_f32()) / (image_width as f32 - 1.0);
                     let v = (j as f32 + random_f32()) / (image_height as f32 - 1.0);
                     let ray = cam.get_ray(u, v);
-                    pixel_color += ray_color(&ray, arc_world.clone(), max_depth);
+                    pixel_color += ray_color(&ray, &background, arc_world.clone(), max_depth);
                 }
                 pixel_color = to_color(pixel_color, samples_per_pixel);
                 arc_sender
