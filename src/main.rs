@@ -17,8 +17,8 @@ use crate::{
     thread_pool::ThreadPool,
     utils::{
         clean_screen, cornell_box, cornell_box_smoke, hittable_list_earth,
-        hittable_list_simple_light, print_progress, random_f32, random_scene, ray_color,
-        two_perlin_shpheres, two_shpheres, PixelInfo,
+        hittable_list_simple_light, hittalbe_list_final_scene, print_progress, random_f32,
+        random_scene, ray_color, two_perlin_shpheres, two_shpheres, PixelInfo,
     },
     vec3::{Color, Point3},
 };
@@ -123,7 +123,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             look_at = Point3::new(278.0, 278.0, 0.0);
             vfov = 40.0;
         }
-        _ => {
+        7 => {
             world = Arc::new(BvhNode::with_hittable_list(&cornell_box_smoke(), 0.0, 1.0));
             aspect_ratio = 1.0;
             image_width = 600;
@@ -131,6 +131,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             samples_per_pixel = 200;
             background = Color::new(0.0, 0.0, 0.0);
             look_from = Point3::new(278.0, 278.0, -800.0);
+            look_at = Point3::new(278.0, 278.0, 0.0);
+            vfov = 40.0;
+        }
+        _ => {
+            world = Arc::new(BvhNode::with_hittable_list(
+                &hittalbe_list_final_scene(),
+                0.0,
+                1.0,
+            ));
+            aspect_ratio = 16.0 / 9.0;
+            image_width = 1920;
+            image_height = (image_width as f32 / aspect_ratio) as usize;
+            samples_per_pixel = 10000;
+            background = Color::new(0.0, 0.0, 0.0);
+            look_from = Point3::new(478.0, 278.0, -600.0);
             look_at = Point3::new(278.0, 278.0, 0.0);
             vfov = 40.0;
         }
