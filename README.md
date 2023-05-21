@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="https://vonbrank-images.oss-cn-hangzhou.aliyuncs.com/20230429-Ray-Tracing-Rust/image-1080p-spp200-01.jpg" alt="Banner image" style="max-width: 100%; object-fit: cover; width: 480px;">
-
+  <img src="https://vonbrank-images.oss-cn-hangzhou.aliyuncs.com/20230429-Ray-Tracing-Rust/ray-tracing-the-next-week-final-540p-spp5000-01.jpg" alt="Banner image" style="max-width: 100%; object-fit: cover; width: 480px;">
+  
   <h3 align="center">Basic Ray Tracer in Rust</h3>
 
   <p align="center">
@@ -10,11 +10,37 @@
 
 ## 关于本项目
 
-本项目参考 [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)，使用 Rust 语言实现了基础的递归式光线追踪算法。
+本项目参考 [Ray Tracing in One Weekend](https://raytracing.github.io/) 系列教程，使用 Rust 语言实现了基础的递归式光线追踪算法。
 
-此外，项目还实现了以下特性：
-+ 随机采样抗锯齿：在每个像素内随机采样取平均值，减少噪点的同时实现抗锯齿。
-+ 材质：包括 Diffuse、Glossy、镜面、半透明 等材质。
+目前已完成前两阶段：
++ [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+  
+<div align="center">
+  <img src="https://vonbrank-images.oss-cn-hangzhou.aliyuncs.com/20230429-Ray-Tracing-Rust/image-1080p-spp200-01.jpg" alt="Banner image" style="max-width: 100%; object-fit: cover; width: 480px;">
+</div>
+
++ [Ray Tracing: The Next Week](https://raytracing.github.io/books/RayTracingTheNextWeek.html)
+
+<div align="center">
+  <img src="https://vonbrank-images.oss-cn-hangzhou.aliyuncs.com/20230429-Ray-Tracing-Rust/ray-tracing-the-next-week-final-540p-spp5000-01.jpg" alt="Banner image" style="max-width: 100%; object-fit: cover; width: 480px;">
+</div>
+
+依据教程实现了以下特性：
++ Ray Tracing in One Weekend:
+  + 球体 Mesh
+  + 随机采样抗锯齿：在每个像素内随机采样取平均值，减少噪点的同时实现抗锯齿。
+  + 材质：包括 Diffuse、Glossy、镜面、半透明 等材质。
+  + 模拟景深
++ Ray Tracing: The Next Week:
+  + 模拟运动模糊
+  + 层次包围盒 BVH
+  + 柏林噪声
+  + 矩形 Fragment、长方体 Mesh
+  + 发光材质
+  + 平移、旋转变换
+  + 体积光
+
+此外，项目还实现了这些特性：
 + 多线程渲染：为了提升性能，减少单次渲染消耗的时间，我们实现了一个线程池。渲染开始前，程序将自动检测设备的逻辑线程数，以确定线程池中的最大可用线程数。每一行像素的渲染将会被分配到不同线程去执行。
 + 可视化渲染进度：渲染开始后，可以从终端实时查看当前渲染进度和已渲染像素数等信息：
   ```txt
