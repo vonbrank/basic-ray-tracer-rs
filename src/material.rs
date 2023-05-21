@@ -152,7 +152,9 @@ impl Material for Dielectric {
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
 
-        let direction = if cannot_refract {
+        let direction = if cannot_refract
+            || Dielectric::reflectance(cos_theta, refraction_ratio) > random_f32()
+        {
             reflect(&unit_direction, &rec.normal)
         } else {
             refract(&unit_direction, &rec.normal, refraction_ratio)
