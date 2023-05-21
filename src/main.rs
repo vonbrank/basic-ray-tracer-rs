@@ -39,6 +39,7 @@ mod thread_pool;
 mod utils;
 mod vec3;
 mod cube;
+mod constant_medium;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Image
