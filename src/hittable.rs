@@ -116,8 +116,8 @@ impl RotateY {
             for j in 0..2 {
                 for k in 0..2 {
                     let x = i as f32 * aabb_box.max().x() + (1 - i) as f32 * aabb_box.min().x();
-                    let y = i as f32 * aabb_box.max().y() + (1 - i) as f32 * aabb_box.min().y();
-                    let z = i as f32 * aabb_box.max().z() + (1 - i) as f32 * aabb_box.min().z();
+                    let y = j as f32 * aabb_box.max().y() + (1 - j) as f32 * aabb_box.min().y();
+                    let z = k as f32 * aabb_box.max().z() + (1 - k) as f32 * aabb_box.min().z();
 
                     let new_x = cos_theta * x + sin_theta * z;
                     let new_z = -sin_theta * x + cos_theta * z;
@@ -126,11 +126,13 @@ impl RotateY {
 
                     for c in 0..3 {
                         min_point[c] = f32::min(min_point[c], tester[c]);
-                        max_point[c] = f32::min(max_point[c], tester[c]);
+                        max_point[c] = f32::max(max_point[c], tester[c]);
                     }
                 }
             }
         }
+
+        let aabb_box = AABB::new(&min_point, &max_point);
 
         RotateY {
             ptr: p,
