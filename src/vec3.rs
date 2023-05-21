@@ -167,6 +167,12 @@ impl ops::Index<usize> for Vec3 {
     }
 }
 
+impl ops::IndexMut<usize> for Vec3 {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.e[index]
+    }
+}
+
 pub fn random_in_unit_sphere() -> Vec3 {
     loop {
         let p = Vec3::random_with_range(-1.0, 1.0);

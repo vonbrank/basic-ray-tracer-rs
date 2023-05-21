@@ -1,6 +1,6 @@
 use crate::aarec::{XYRect, XZRect, YZRect};
 use crate::cube::Cube;
-use crate::hittable::{HitRecord, Hittable};
+use crate::hittable::{HitRecord, Hittable, RotateY, Translate};
 use crate::material::DiffuseLight;
 use crate::moving_sphere::MovingSphere;
 use crate::ray::Ray;
@@ -319,16 +319,24 @@ pub fn cornell_box() -> HittableList {
         555.0,
         white.clone(),
     )));
-    objects.add(Arc::new(Cube::new(
-        &Point3::new(130.0, 0.0, 65.0),
-        &Point3::new(295.0, 165.0, 230.0),
+
+    let cube1 = Arc::new(Cube::new(
+        &Point3::new(0.0, 0.0, 0.0),
+        &Point3::new(165.0, 330.0, 165.0),
         white.clone(),
-    )));
-    objects.add(Arc::new(Cube::new(
-        &Point3::new(265.0, 0.0, 295.0),
-        &Point3::new(430.0, 330.0, 460.0),
+    ));
+    let cube1 = Arc::new(RotateY::new(cube1, 15.0));
+    let cube1 = Arc::new(Translate::new(cube1, &Vec3::new(265.0, 0.0, 295.0)));
+    objects.add(cube1);
+
+    let cube2 = Arc::new(Cube::new(
+        &Point3::new(0.0, 0.0, 0.0),
+        &Point3::new(165.0, 165.0, 165.0),
         white.clone(),
-    )));
+    ));
+    let cube2 = Arc::new(RotateY::new(cube2, -18.0));
+    let cube2 = Arc::new(Translate::new(cube2, &Vec3::new(130.0, 0.0, 65.0)));
+    objects.add(cube2);
 
     objects
 }
